@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Tag, Item
+from core.models import Tag, Item, Coffee
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -18,4 +18,23 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ('id', 'name')
+        read_only_fields = ('id',)
+
+
+class CoffeeSerializer(serializers.ModelSerializer):
+    """Serialize a coffee"""
+    items = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Item.objects.all()
+    )
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Tag.objects.all()
+    )
+
+    class Meta:
+        model = Coffee
+        fields = (
+            'id', 'title', 'items', 'tags', 'time_minutes', 'price', 'link',
+        )
         read_only_fields = ('id',)
