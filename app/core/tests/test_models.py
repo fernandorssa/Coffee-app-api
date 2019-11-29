@@ -61,3 +61,14 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(item), item.name)
+
+    def test_coffee_str(self):
+        """Test the coffee string representation"""
+        coffee = models.Coffee.objects.create(
+            user=sample_user(),
+            title='Café Melita',
+            time_minutes=5,
+            price=5.0
+        )
+
+        self.assertEqual(str(coffee), coffee.title)
