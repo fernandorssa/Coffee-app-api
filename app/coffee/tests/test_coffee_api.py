@@ -104,3 +104,55 @@ class PrivateCoffeeApiTests(TestCase):
 
         serializer = CoffeeDetailSerializer(coffee)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_basic_coffee(self):
+        """Test creating coffee"""
+        payload = {
+            'title': 'Café 3 corações',
+            'time_minutes': 30,
+            'price': 5.00
+        }
+        res = self.client.post(COFFEES_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        coffee = Coffee.objects.get(id=res.data['id'])
+        for key in payload.keys():
+            self.assertEqual(payload[key], getattr(coffee, key))
+
+    def test_create_coffee_with_tags(self):
+        """Test creating a coffee with tags"""
+        tag1 = sample_tag(user=self.user, name='Mundo Novo')
+        tag2 = sample_tag(user=self.user, name='Catuaí')
+        payload = {
+            'title': 'Café Pelé',
+            'tags': [tag1.id, tag2.id],
+            'time_minutes': 60,
+            'price': 20.00
+        }
+        res = self.client.post(COFFEES_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        coffee = Coffee.objects.get(id=res.data['id'])
+        tags = coffee.tags.all()
+        self.assertEqual(tags.count(), 2)
+        self.assertIn(tag1, tags)
+        self.assertIn(tag2, tags)
+
+    def test_create_coffee_with_items(self):
+        """Test creating coffee with items"""
+        item1 = sample_item(user=self.user, name='Conilon')
+        item2 = sample_item(user=self.user, name='Robusta')
+        payload = {
+            'title': 'Orfeu',
+            'items': [item1.id, item2.id],
+            'time_minutes': 20,
+            'price': 7.00
+        }
+        res = self.client.post(COFFEES_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        coffee = Coffee.objects.get(id=res.data['id'])
+        items = coffee.items.all()
+        self.assertEqual(items.count(), 2)
+        self.assertIn(item1, items)
+        self.assertIn(item2, items)
