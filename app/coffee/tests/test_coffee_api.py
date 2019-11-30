@@ -5,12 +5,27 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Coffee
+from core.models import Coffee, Tag, Item
 
-from coffee.serializers import CoffeeSerializer
+from coffee.serializers import CoffeeSerializer, CoffeeDetailSerializer
 
 
 COFFEES_URL = reverse('coffee:coffee-list')
+
+
+def detail_url(coffee_id):
+    """Return coffee detail URL"""
+    return reverse('coffee:coffee-detail', args=[coffee_id])
+
+
+def sample_tag(user, name='Main course'):
+    """Create and return a sample tag"""
+    return Tag.objects.create(user=user, name=name)
+
+
+def sample_item(user, name='Santa Catarina'):
+    """Create and return a sample item"""
+    return Item.objects.create(user=user, name=name)
 
 
 def sample_coffee(user, **params):
@@ -18,7 +33,7 @@ def sample_coffee(user, **params):
     defaults = {
         'title': 'Sample coffee',
         'time_minutes': 10,
-        'price': 5.00
+        'price': 5.00,
     }
     defaults.update(params)
 
@@ -42,7 +57,7 @@ class PrivateCoffeeApiTests(TestCase):
     """Test unauthenticated coffee API access"""
 
     def setUp(self):
-        self.client = APIClient
+        self.client = APIClient()
         self.user = get_user_model().objects.create_user(
             'test@londonappdev.com'
             'testpass'
@@ -76,4 +91,16 @@ class PrivateCoffeeApiTests(TestCase):
         serializer = CoffeeSerializer(coffees, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_view_coffee_details(self):
+        """Test viewing a coffee detail"""
+        coffee = sample_coffee(user=self.user)
+        coffee.tags.add(sample_tag(user=self.user))
+        coffee.items.add(sample_item(user=self.user))
+
+        url = detail_url(coffee.id)
+        res = self.client.get(url)
+
+        serializer = CoffeeDetailSerializer(coffee)
         self.assertEqual(res.data, serializer.data)

@@ -38,3 +38,9 @@ class CoffeeSerializer(serializers.ModelSerializer):
             'id', 'title', 'items', 'tags', 'time_minutes', 'price', 'link',
         )
         read_only_fields = ('id',)
+
+
+class CoffeeDetailSerializer(CoffeeSerializer):
+    """Serialize a coffee detail"""
+    items = ItemSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
